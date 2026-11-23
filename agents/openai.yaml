@@ -1,0 +1,3 @@
+interface:
+  display_name: "Maxwell 永磁同步电机仿真"
+  short_description: "用 Maxwell 本地脚本或 MCP 建模、求解并核验永磁同步电机结果"
