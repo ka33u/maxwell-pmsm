@@ -175,8 +175,24 @@ def render(data, basename, font=None):
     section(fig,10,141,"电磁波形","时间轴为求解时刻，空间波形为全局机械角",270)
     if len(data["waves"])!=6:
         raise ValueError("Six waveform panels are required")
-    for i,wave in enumerate(data["waves"]):
-        plot_wave(fig,[10,144][i%2],154+43*(i//2),126,wave)
+    if "winding_rows" in data:
+        if len(data["winding_rows"]) > 6:
+            raise ValueError("Single-sheet winding table supports six rows")
+        for i,wave in enumerate(data["waves"]):
+            plot_wave(fig,10+88*(i%3),153+39*(i//3),83,wave)
+        section(fig,10,232,"绕组、负荷与电感",data["winding_note"],270)
+        details = data.get("winding_details", [])
+        if len(details) > 5:
+            raise ValueError("Single-sheet winding layout supports five detail lines")
+        table(fig,10,243,140,["指标","数值"],data["winding_rows"],[.012,.985],5.2)
+        label(fig,157,243,"额定工况与数据口径",9,TEAL,True)
+        for j,note in enumerate(details):
+            label(fig,157,250+5.6*j,note,8.2)
+        if not details:
+            label(fig,11,279,data["winding_basis"],8,MUTED)
+    else:
+        for i,wave in enumerate(data["waves"]):
+            plot_wave(fig,[10,144][i%2],154+43*(i//2),126,wave)
     line(fig,275,31,275,278)
     strip(fig,0,283,W,14,"#e9f2f2")
     for j,s in enumerate(data["footnotes"]):

@@ -142,14 +142,27 @@ def render(data, out, font=None):
     section(fig,205,172,"单台主要材料成本","设计净用量  /  人民币",410)
     table(fig,10,183,186,data["performance_headers"],data["performance_rows"],[.012,.69,.985],6.3)
     table(fig,205,183,205,data["cost_headers"],data["cost_rows"],[.012,.40,.695,.985],7.6,total=True)
-    for j,s in enumerate(data["price_notes"]):
-        label(fig,206,224+j*5.2,s,8,MUTED)
-    label(fig,205,245,"计算条件与适用范围",11,INK,True)
-    for j,s in enumerate(data["limits"]):
-        label(fig,206,253+j*5.1,s,8.2,INK)
-    strip(fig,0,282,W,15,"#e9f2f2")
-    label(fig,10,287,data["footer"][0],8.5,TEAL,True)
-    label(fig,10,293,data["footer"][1],8,MUTED)
+    if "winding_rows" in data:
+        if len(data["winding_rows"]) > 6 or len(data["limits"]) > 5:
+            raise ValueError("Comparison winding layout supports six rows and five scope notes")
+        for j,s in enumerate(data["price_notes"]):
+            label(fig,206,219+j*4.4,s,8,MUTED)
+        section(fig,205,235,"绕组、负荷与电感",data["winding_note"],410)
+        table(fig,205,244,205,data["performance_headers"],data["winding_rows"],[.012,.69,.985],5)
+        strip(fig,0,278,W,19,"#e9f2f2")
+        for j,s in enumerate([*data["limits"],data["winding_basis"]]):
+            label(fig,10+198*(j//3),281+4.2*(j%3),s,8,INK)
+        for j,s in enumerate(data["footer"]):
+            label(fig,10+198*j,294,s,7.3,TEAL)
+    else:
+        for j,s in enumerate(data["price_notes"]):
+            label(fig,206,224+j*5.2,s,8,MUTED)
+        label(fig,205,245,"计算条件与适用范围",11,INK,True)
+        for j,s in enumerate(data["limits"]):
+            label(fig,206,253+j*5.1,s,8.2,INK)
+        strip(fig,0,282,W,15,"#e9f2f2")
+        label(fig,10,287,data["footer"][0],8.5,TEAL,True)
+        label(fig,10,293,data["footer"][1],8,MUTED)
     out.parent.mkdir(parents=True,exist_ok=True)
     fig.savefig(out.with_suffix(".pdf"),format="pdf")
     fig.savefig(out.with_suffix(".png"),dpi=210)
