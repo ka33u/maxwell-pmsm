@@ -2,6 +2,21 @@
 from math import isfinite, pi
 
 
+def phase_resistance_20c(*, series_turns_per_path, mean_half_turn_mm, copper_area_mm2,
+                        parallel_paths, rho20_ohm_mm2_m=1/58):
+    """DC resistance of identical parallel paths, excluding leads and contacts."""
+    for count in (series_turns_per_path, parallel_paths):
+        if type(count) is not int or count <= 0:
+            raise ValueError("Positive integer series turns and parallel paths required")
+    if not all(isfinite(x) and x > 0 for x in (mean_half_turn_mm, copper_area_mm2, rho20_ohm_mm2_m)):
+        raise ValueError("Positive finite mean half-turn length, copper area and resistivity required")
+    path_length_m = series_turns_per_path * 2 * mean_half_turn_mm / 1000
+    path_R = rho20_ohm_mm2_m * path_length_m / copper_area_mm2
+    return dict(series_turns_per_path=series_turns_per_path, mean_half_turn_mm=mean_half_turn_mm,
+                path_length_m=path_length_m, rho20_ohm_mm2_m=rho20_ohm_mm2_m,
+                path_R20_ohm=path_R, phase_R20_ohm=path_R / parallel_paths)
+
+
 def round_wire_loading(*, phase_rms_A, parallel_paths, wires, slots, conductors_per_slot, bore_mm):
     """Each wire is (parallel strands, bare diameter in mm). Paths share current equally."""
     for n in (parallel_paths, slots, conductors_per_slot):

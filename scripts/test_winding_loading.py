@@ -1,10 +1,24 @@
 import math
 import unittest
 
-from winding_loading import round_wire_loading
+from winding_loading import phase_resistance_20c, round_wire_loading
 
 
 class TestWindingLoading(unittest.TestCase):
+    def test_phase_resistance_from_half_turn_and_parallel_paths(self):
+        result = phase_resistance_20c(series_turns_per_path=50, mean_half_turn_mm=200,
+                                     copper_area_mm2=2.5, parallel_paths=4)
+        self.assertEqual(result["path_length_m"], 20.0)
+        self.assertAlmostEqual(result["phase_R20_ohm"], 20 / (58 * 2.5 * 4))
+        self.assertAlmostEqual(result["path_R20_ohm"], 4 * result["phase_R20_ohm"])
+
+    def test_resistance_rejects_missing_copper_or_fractional_turns(self):
+        args = dict(series_turns_per_path=2, mean_half_turn_mm=200, copper_area_mm2=1, parallel_paths=1)
+        for key, value in (("series_turns_per_path", 2.5), ("mean_half_turn_mm", 0),
+                           ("parallel_paths", 0), ("copper_area_mm2", float("nan"))):
+            with self.subTest(key=key), self.assertRaises(ValueError):
+                phase_resistance_20c(**{**args, key: value})
+
     def test_mixed_strands_and_parallel_paths(self):
         args = dict(phase_rms_A=24, parallel_paths=2, slots=24,
                     conductors_per_slot=10, bore_mm=100)
